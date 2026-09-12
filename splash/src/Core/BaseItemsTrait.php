@@ -621,7 +621,7 @@ trait BaseItemsTrait
         }
         //====================================================================//
         // Update Product Link
-        $this->currentItem->setValueFrom("fk_product", $productId, '', null, '', '', "none");
+        $this->currentItem->setValueFrom("fk_product", $productId, '', null, 'int', '', "none");
         $this->catchDolibarrErrors($this->currentItem);
         //====================================================================//
         // Update Product Type
