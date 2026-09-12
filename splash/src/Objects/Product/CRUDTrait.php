@@ -276,8 +276,33 @@ trait CRUDTrait
         /** @var User $user */
         if ($product->create($user, $triggers ? 0 : 1) <= 0) {
             $this->catchDolibarrErrors($product);
+            //====================================================================//
+            // Name the reference that failed, and who already holds it.
+            //
+            // Dolibarr sanitises the reference on create (a "/" becomes "_"),
+            // so the ref the source sent and the ref stored can differ. Look
+            // for both forms, otherwise "already exists" points at nothing the
+            // operator can find.
+            $conflict = "";
+            $existing = new Product($db);
+            $sanitized = dol_sanitizeFileName(dol_string_nospecial(trim($ref)));
+            $found = ($existing->fetch(0, $ref) > 0)
+                || (($sanitized != $ref) && ($existing->fetch(0, $sanitized) > 0));
+            if ($found) {
+                $conflict = sprintf(
+                    " - reference already used by product id %s (Dolibarr ref: %s / %s)",
+                    $existing->id,
+                    $existing->ref,
+                    $existing->label
+                );
+            }
 
-            return Splash::log()->errNull("Unable to create new Product.");
+            return Splash::log()->errNull(sprintf(
+                "Unable to create new Product [ref: %s / label: %s]%s",
+                $ref,
+                $label,
+                $conflict
+            ));
         }
 
         return $product;
