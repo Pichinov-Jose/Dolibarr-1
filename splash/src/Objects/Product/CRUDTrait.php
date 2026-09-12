@@ -141,6 +141,15 @@ trait CRUDTrait
         // Stack Trace
         Splash::log()->trace();
         //====================================================================//
+        // Deleting a Variant Parent Product is Forbidden!
+        //
+        // Same guard as load(): a parent carries no order line of its own, so
+        // isObjectUsed() believes it is free and Dolibarr deletes it together
+        // with every variant hanging from it.
+        if (VariantsManager::hasProductVariants((int) $objectId)) {
+            return Splash::log()->err(Splash::trans("ProductIsVariantBase"));
+        }
+        //====================================================================//
         // Load Object
         $object = new Product($db);
         //====================================================================//
